@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example</groupId>
+    <artifactId>servlet-web</artifactId>
+    <version>1.0.0</version>
+    <packaging>war</packaging>
+    <name>servlet-web</name>
+    <description>Java Servlet web application deployable on NEC WebOTX Application Server</description>
+
+    <properties>
+        <!-- Compiler -->
+        <maven.compiler.release>21</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Jakarta EE 9+ for WebOTX V10 / V11 (Servlet 6.0) -->
+        <jakartaee.version>9.1.0</jakartaee.version>
+        <servlet.api.version>6.0.0</servlet.api.version>
+        <jsp.api.version>3.1.1</jsp.api.version>
+        <el.api.version>5.0.0</el.api.version>
+
+        <!-- Jackson (Jakarta) -->
+        <jackson.version>2.17.2</jackson.version>
+
+        <!-- Logging -->
+        <slf4j.version>2.0.13</slf4j.version>
+
+        <!-- WebOTX deployment plugin -->
+        <webotx.home>${env.WEBOTX_HOME}</webotx.home>
+        <webotx.domain>domain1</webotx.domain>
+        <webotx.target>server</webotx.target>
+        <webotx.user>admin</webotx.user>
+        <webotx.passwordfile>${project.basedir}/conf/webotx-password.txt</webotx.passwordfile>
+
+        <!-- Plugins -->
+        <war.plugin.version>3.4.0</war.plugin.version>
+        <compiler.plugin.version>3.13.0</compiler.plugin.version>
+        <webotx.plugin.version>1.2.0</webotx.plugin.version>
+    </properties>
+
+    <dependencies>
+        <!-- Jakarta Servlet API (provided by WebOTX) -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>${servlet.api.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Jakarta Server Pages (JSP) API -->
+        <dependency>
+            <groupId>jakarta.servlet.jsp</groupId>
+            <artifactId>jakarta.servlet.jsp-api</artifactId>
+            <version>${jsp.api.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Jakarta Expression Language (EL) -->
+        <dependency>
+            <groupId>jakarta.el</groupId>
+            <artifactId>jakarta.el-api</artifactId>
+            <version>${el.api.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- JSTL 3.0 (Jakarta) - both API and implementation under jakarta.* packages. -->
+        <dependency>
+            <groupId>jakarta.servlet.jsp.jstl</groupId>
+            <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+
+        <!-- JSTL 3.0 (Jakarta). TLDs are discovered from META-INF automatically. -->
+        <dependency>
+            <groupId>org.glassfish.web</groupId>
+            <artifactId>jakarta.servlet.jsp.jstl</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+
+        <!-- Jackson for JSON read/write -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
+        <!-- Logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Test scope -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.3</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>servlet-web</finalName>
+
+        <plugins>
+            <!-- Compiler -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${compiler.plugin.version}</version>
+                <configuration>
+                    <release>21</release>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+
+            <!-- WAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>${war.plugin.version}</version>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <!-- Surefire for JUnit 5 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+            </plugin>
+        </plugins>
+
+        <!--
+            The WebOTX plugin lives in pluginManagement only, so it does
+            not resolve on the classpath during a plain `mvn package`.
+            Activate `-Pwebotx-deploy` to bind it to the `package` phase.
+        -->
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>jp.co.nec.protocolrevolution.webotx</groupId>
+                    <artifactId>webuipack</artifactId>
+                    <version>${webotx.plugin.version}</version>
+                    <configuration>
+                        <webotxHome>${webotx.home}</webotxHome>
+                        <domain>${webotx.domain}</domain>
+                        <target>${webotx.target}</target>
+                        <user>${webotx.user}</user>
+                        <passwordFile>${webotx.passwordfile}</passwordFile>
+                        <file>${project.build.directory}/${project.build.finalName}.war</file>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <profiles>
+        <!--
+            Profile `webotx-deploy`: bind `package` to the WebOTX redeploy goal.
+            Activate with `-Pwebotx-deploy`. Without it, only the WAR is built.
+        -->
+        <profile>
+            <id>webotx-deploy</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>jp.co.nec.protocolrevolution.webotx</groupId>
+                        <artifactId>webuipack</artifactId>
+                        <executions>
+                            <execution>
+                                <id>webotx-redeploy</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>redeploy</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

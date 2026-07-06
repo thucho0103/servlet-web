@@ -1,0 +1,24 @@
+# Maven build output
+target/
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+nbproject/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+# WebOTX credentials template (overwrite conf/webotx-password.txt locally with your real password)
+webotx-password.txt
